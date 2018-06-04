@@ -1,6 +1,7 @@
-## Caliper Introduction
+## TrustedBench Introduction
 
-Caliper is a blockchain performance benchmark framework, which allows users to test different blockchain solutions with predefined use cases, and get a set of performance test results.
+TrustedBench is a blockchain performance benchmark framework, which allows users to test different blockchain solutions with predefined use cases, and get a set of performance test results.
+TrustedBench is a secondary developed product based on hyperledger caliper.
 
 Currently supported blockchain solutions:
 * [fabric v1.0+](https://github.com/hyperledger/fabric), the lastest version that has been verified is v1.1.0 

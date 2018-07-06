@@ -643,9 +643,9 @@ async function invokebycontext(context, id, version, args, timeout){
         };
 
         let newTimeout = timeout * 1000 - (Date.now() - startTime);
-        if(newTimeout < 10000) {
+        if(newTimeout < 600000) {
             commUtils.log('WARNING: timeout is too small, default value is used instead');
-            newTimeout = 10000;
+            newTimeout = 1000000;
         }
 
         const eventPromises = [];

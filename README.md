@@ -1,7 +1,7 @@
 ## TrustedBench Introduction
 
 TrustedBench is a blockchain performance benchmark framework, which allows users to test different blockchain solutions with predefined use cases, and get a set of performance test results.
-TrustedBench is a secondary developed product based on hyperledger caliper.
+TrustedBench is a secondary developed product based on hyperledger Caliper.
 
 Currently supported blockchain solutions:
 * [fabric v1.0+](https://github.com/hyperledger/fabric), the lastest version that has been verified is v1.1.0 
@@ -31,7 +31,7 @@ Make sure following tools are installed
 * Docker
 * Docker-compose
 
-Run `npm install` in caliper folder to install dependencies locally
+Run `npm install` in TrustedBench folder to install dependencies locally
 
 ### Install blockchain SDKs
 * Fabric
@@ -106,7 +106,7 @@ You can also use npm scripts to run a benchmark.
 ```bash
 $ npm run list
 
-> caliper@0.1.0 list /home/hurf/caliper
+> TrustedBench@0.1.0 list /home/XXX/TrustedBench
 > node ./scripts/list.js
 
 Available benchmarks:
@@ -118,7 +118,7 @@ simple
 ```bash
 $ npm test -- simple -c ./benchmark/simple/config.json -n ./benchmark/simple/fabric.json
 
-> caliper@0.1.0 test /home/hurf/caliper
+> TrustedBench@0.1.0 test /home/XXX/TrustedBench
 > node ./scripts/test.js "simple" "-c" "./benchmark/simple/config.json" "-n" "./benchmark/simple/fabric.json"
 ......
 ```
@@ -133,14 +133,14 @@ In this way, multiple clients can be launched on distributed hosts to run the sa
     ```bash
     $ npm run startclient -- 10.229.42.159:2181
     
-    > caliper@0.1.0 startclient /home/hurf/caliper
+    > TrustedBench@0.1.0 startclient /home/XXX/TrustedBench
     > node ./src/comm/client/zoo-client.js "10.229.42.159:2181"
 
     Connected to ZooKeeper
-    Created client node:/caliper/clients/client_1514532063571_0000000006
-    Created receiving queue at:/caliper/client_1514532063571_0000000006_in
-    Created sending queue at:/caliper/client_1514532063571_0000000006_out
-    Waiting for messages at:/caliper/client_1514532063571_0000000006_in......
+    Created client node:/TrustedBench/clients/client_1514532063571_0000000006
+    Created receiving queue at:/TrustedBench/client_1514532063571_0000000006_in
+    Created sending queue at:/TrustedBench/client_1514532063571_0000000006_out
+    Waiting for messages at:/TrustedBench/client_1514532063571_0000000006_in......
     ```
 3. Modify the client type setting in configuration file to 'zookeeper'.
 
@@ -158,19 +158,19 @@ In this way, multiple clients can be launched on distributed hosts to run the sa
 4. Launch the benchmark on any machine as usual.
 
 Note:
-* Zookeeper is used to register clients and exchange messages. A launched client will add a new znode under /caliper/clients/. The benchmark checks the directory to learn how many clients are there, and assign tasks to each client according to the workload. 
+* Zookeeper is used to register clients and exchange messages. A launched client will add a new znode under /TrustedBench/clients/. The benchmark checks the directory to learn how many clients are there, and assign tasks to each client according to the workload. 
 * There is no automatic time synchronization between the clients. You should manually synchronize time between target machines, for example using 'ntpdate'.
-* The blockchain configuration file must exist on machines which run the client, and the relative path (relative to the caliper folder) of the file must be identical. All referenced files in the configuration must also exist.   
+* The blockchain configuration file must exist on machines which run the client, and the relative path (relative to the TrustedBench folder) of the file must be identical. All referenced files in the configuration must also exist.   
   
 
 
 
 ## Write your own benchmarks
-Caliper provides a set of nodejs NBIs (North Bound Interfaces) for applications to interact with backend blockchain system. Check the [*src/comm/blockchain.js*](./src/comm/blockchain.js) to learn about the NBIs. Multiple *Adaptors* are implemented to translate the NBIs to different blockchain protocols. So developers can write a benchmark once, and run it with different blockchain systems.
+TrustedBench provides a set of nodejs NBIs (North Bound Interfaces) for applications to interact with backend blockchain system. Check the [*src/comm/blockchain.js*](./src/comm/blockchain.js) to learn about the NBIs. Multiple *Adaptors* are implemented to translate the NBIs to different blockchain protocols. So developers can write a benchmark once, and run it with different blockchain systems.
 
-Generally speaking, to write a new caliper benchmark, you need to:
+Generally speaking, to write a new TrustedBench benchmark, you need to:
 * Write smart contracts for systems you want to test
-* Write a testing flow using caliper NBIs. Caliper provides a default benchmark engine, which is pluggable and configurable to integrate new tests easily. For more details, please refer to [Benchmark Engine](./docs/Architecture.md#benchmark-engine) .
+* Write a testing flow using TrustedBench NBIs. TrustedBench provides a default benchmark engine, which is pluggable and configurable to integrate new tests easily. For more details, please refer to [Benchmark Engine](./docs/Architecture.md#benchmark-engine) .
 * Write a configuration file to define the backend network and benchmark arguments.
 
 ## Directory Structure
@@ -187,4 +187,4 @@ Generally speaking, to write a new caliper benchmark, you need to:
 See [Contributing](/CONTRIBUTING.md)
 
 ## License
-The Caliper codebase is release under the [Apache 2.0 license](./LICENSE). Any documentation developed by the Caliper Project is licensed under the Creative Commons Attribution 4.0 International License. You may obtain a copy of the license, titled CC-BY-4.0, at http://creativecommons.org/licenses/by/4.0/.
+The TrustedBench codebase is release under the [Apache 2.0 license](./LICENSE). Any documentation developed by the TrustedBench Project is licensed under the Creative Commons Attribution 4.0 International License. You may obtain a copy of the license, titled CC-BY-4.0, at http://creativecommons.org/licenses/by/4.0/.

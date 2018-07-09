@@ -1,0 +1,1 @@
+node benchmark/simple/main.js -c config-fabric-solo1orgv120.json -n fabric-solo1orgv120.json

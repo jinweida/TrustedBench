@@ -1,0 +1,36 @@
+# COPYRIGHT Hello Corp. All Rights Reserved.
+#
+# Author: Haley
+#
+
+version: '2'
+
+services:
+
+  orderer1.example.com:
+    extends:
+      file: orderer-base.yaml
+      service: orderer.example.com
+    container_name: orderer1.example.com
+    #environment:
+      #- ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      #- ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      #- ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      #- ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      #- ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+      - kafka0
+      - kafka1
+      - kafka2
+    volumes:
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer1.example.com/tls:/var/hyperledger/orderer/tls
+    ports:
+      - 7050:7050
+    extra_hosts:
+      - "kafka1:kafka1host"
+      - "kafka2:kafka2host"
+      - "kafka3:kafka3host"

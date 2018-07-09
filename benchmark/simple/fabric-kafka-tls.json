@@ -1,0 +1,77 @@
+{
+  "fabric": {
+    "cryptodir": "network/fabric/kafka/crypto-config",
+    "network": {
+      "orderer": {
+        "url": "grpcs://localhost:7050",
+        "mspid": "OrdererMSP",
+        "user": {
+          "key": "network/fabric/kafka/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/0fea3c59196c7d7c2ab67590bed5c3604703f0f00e23b27a9a1554939d6b0fca_sk",
+          "cert": "network/fabric/kafka/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem"
+        },
+        "server-hostname": "orderer.example.com",
+        "tls_cacerts": "network/fabric/kafka/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt"
+      },
+      "org1": {
+        "name": "peerOrg1",
+        "mspid": "Org1MSP",
+        "user": {
+          "key": "network/fabric/kafka/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/f975001fb9b7cfff54c27033e57882e1f1555d58874ced12d23efcfd58199593_sk",
+          "cert": "network/fabric/kafka/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem"
+        },
+        "ca": {
+          "url": "https://localhost:7054",
+          "name": "ca-org1"
+        },
+        "peer1": {
+          "requests": "grpcs://localhost:7051",
+          "events": "grpcs://localhost:7053",
+          "server-hostname": "peer0.org1.example.com",
+          "tls_cacerts": "network/fabric/kafka/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
+        },
+        "peer2": {
+          "requests": "grpcs://localhost:7057",
+          "events": "grpcs://localhost:7059",
+          "server-hostname": "peer1.org1.example.com",
+          "tls_cacerts": "network/fabric/kafka/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt"
+        }
+      }
+    },
+    "channel": [
+      {
+        "name": "mychannel",
+        "config": "network/fabric/kafka/channel-artifacts/channel.tx",
+        "organizations": ["org1"],
+        "deployed": false
+      }
+    ],
+    "chaincodes": [{"id": "simple", "path": "contract/fabric/simple", "language":"golang", "version": "v0", "channel": "mychannel"}],
+    "endorsement-policy": {
+      "identities": [
+        {
+          "role": {
+            "name": "member",
+            "mspId": "Org1MSP"
+          }
+        },
+        {
+          "role": {
+            "name": "admin",
+            "mspId": "Org1MSP"
+          }
+        }
+      ],
+      "policy": { "1-of": [{"signed-by": 0}]}
+    },
+    "context": {
+      "open": "mychannel",
+      "query": "mychannel"
+    }
+  },
+  "info" : {
+    "Version": "1.1.0",
+    "Size": "4 Peers",
+    "Orderer": "Kafka",
+    "Distribution": "Single Host"
+  }
+}

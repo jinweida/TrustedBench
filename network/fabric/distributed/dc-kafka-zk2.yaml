@@ -1,0 +1,29 @@
+# COPYRIGHT Hello Corp. All Rights Reserved.
+#
+# Author: Haley
+#
+
+version: '2'
+
+services:
+  zk2:
+    extends:
+      file: kafka-base.yaml
+      service: zookeeper
+    container_name: zk2
+    hostname: zk2
+    environment:
+      # ID在集合中必须是唯一的并且应该有一个值在1-255之间。
+      - ZOO_MY_ID=2
+      # 组成ZK集合的服务器列表。客户端使用的列表必须与ZooKeeper服务器列表所拥有的每一个ZK服务器相匹配。
+      # 有两个端口号：第一个是追随者用来连接领导者的，第二个是领导人选举。
+      - ZOO_SERVERS=server.1=zk1:2888:3888 server.2=zk2:2888:3888 server.3=zk3:2888:3888
+    depends_on:
+      - zk1
+    ports:
+      - 2181:2181
+      - 2888:2888
+      - 3888:3888
+    extra_hosts:
+      - "zk1:zk1host"
+      - "zk3:zk3host"

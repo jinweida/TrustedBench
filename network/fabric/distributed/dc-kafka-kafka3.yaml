@@ -1,0 +1,43 @@
+# COPYRIGHT Hello Corp. All Rights Reserved.
+#
+# Author: Haley
+#
+
+version: '2'
+
+services:
+
+  kafka3:
+    extends:
+      file: kafka-base.yaml
+      service: kafka
+    container_name: kafka3
+    hostname: kafka3
+    environment:
+      - KAFKA_BROKER_ID=3
+      # min.insync.replicas=M --- 设置一个M值（例如1<M<N，查看下面的default.replication.factor）
+      # 数据提交时会写入至少M个副本（这些数据然后会被同步并且归属到in-sync副本集合或ISR）。
+      # 其它情况，写入操作会返回一个错误。接下来：
+      # 1. 如果channel写入的数据多达N-M个副本变的不可用，操作可以正常执行。
+      # 2. 如果有更多的副本不可用，Kafka不可以维护一个有M数量的ISR集合，因此Kafka停止接收写操作。Channel只有当同步M个副本后才可以重新可以写。
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      # 指向Zookeeper节点的集合，其中包含ZK的集合。
+      - KAFKA_ZOOKEEPER_CONNECT=zk1:2181,zk2:2181,zk3:2181
+    depends_on:
+      - zk1
+      - zk2
+      - zk3
+      - kafka1
+      - kafka2
+    ports:
+      - 9092:9092
+    extra_hosts:
+      - "zk1:zk1host"
+      - "zk2:zk2host"
+      - "zk3:zk3host"
+      - "kafka2:kafka2host"
+      - "kafka1:kafka1host"
+
+
+

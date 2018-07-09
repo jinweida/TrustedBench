@@ -13,7 +13,7 @@
     "clients": {
       "type": "zookeeper",
       "zoo" : {
-        "server": "10.229.42.159:2181",
+        "server": "localhost:1301",
         "clientsPerHost": 5
       }
     },

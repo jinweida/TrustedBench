@@ -38,6 +38,13 @@ class Blockchain {
             this.bcType = 'composer';
             this.bcObj = new composer(configPath);
         }
+        // sinochain: add sinochain support
+        else if (config.hasOwnProperty('sinochain')) {
+            let sinochain = require('../sinochain/sinochain');
+            this.bcType = 'sinochain';
+            this.bcObj = new sinochain(configPath);
+        }
+        // end sinochain
         else {
             this.bcType = 'unknown';
             throw new Error('Unknown blockchain config file ' + configPath);
@@ -284,6 +291,29 @@ class Blockchain {
      */
     static createNullDefaultTxStats() {
         return {succ: 0, fail: 0};
+    }
+
+    /**
+     * send data to cloud
+     * @param {Object} context context object
+     * @param {Object} payload data send to sinochain cloud
+     */
+    sinoSendToCloud(context, payload) {
+        return this.bcObj.sinoSendToCloud(context, payload);
+    }
+
+    /**
+     * disconnect from sinochain cloud server
+     */
+    sinoDisconnectFromCloud() {
+        this.bcObj.sinoDisconnectFromCloud();
+    }
+
+    /**
+     * whether the cloud connection is opened
+     */
+    sinoIsConnectionOpen() {
+        return this.bcObj.sinoIsConnectionOpen();
     }
 }
 

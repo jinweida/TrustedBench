@@ -101,6 +101,29 @@ class BlockchainInterface {
     getDefaultTxStats(stats, results) {
         throw new Error('getDefaultTxStats is not implemented for this blockchain system');
     }
+
+    /**
+     * send data to cloud
+     * @param {Object} context context object
+     * @param {Object} payload data send to sinochain cloud
+     */
+    sinoSendToCloud(context, payload) {
+        throw new Error('sinoSendToCloud is not implemented for this blockchain system');
+    }
+
+    /**
+     * disconnect from sinochain cloud server
+     */
+    sinoDisconnectFromCloud() {
+        throw new Error('sinoDisconnectFromCloud is not implemented for this blockchain system');
+    }
+
+    /**
+     * whether the cloud connection is opened
+     */
+    sinoIsConnectionOpen() {
+        throw new Error('sinoIsConnectionOpen is not implemented for this blockchain system');
+    }
 }
 
 module.exports = BlockchainInterface;

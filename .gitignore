@@ -27,3 +27,6 @@ zookeeper.out
 
 # Ignore IDE files
 .vscode/*
+
+# Ignore eslint files
+.eslintrc.*

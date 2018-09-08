@@ -131,6 +131,17 @@ async function runFixedNumber(msg, cb, context) {
     let rateControl = new RateControl(msg.rateControl, blockchain);
     rateControl.init(msg);
 
+    // sinochain: add some args to callback function
+    if (!msg.args) {
+        msg.args = {};
+    }
+    msg.args.txNum = msg.numb;
+    if (msg.zooClientIdx) {
+        msg.args.clientIndex = (msg.zooClientIdx * msg.clients) + msg.clientIdx;
+    } else {
+        msg.args.clientIndex = msg.clientIdx;
+    }
+    // end sinochain
     await cb.init(blockchain, context, msg.args);
     startTime = Date.now();
 
@@ -161,6 +172,17 @@ async function runDuration(msg, cb, context) {
     rateControl.init(msg);
     const duration = msg.txDuration; // duration in seconds
 
+    // sinochain: add some args to callback function
+    if (!msg.args) {
+        msg.args = {};
+    }
+    msg.args.txNum = msg.txDuration * 100000;
+    if (msg.zooClientIdx) {
+        msg.args.clientIndex = (msg.zooClientIdx * msg.clients) + msg.clientIdx;
+    } else {
+        msg.args.clientIndex = msg.clientIdx;
+    }
+    // end sinochain
     await cb.init(blockchain, context, msg.args);
     startTime = Date.now();
 

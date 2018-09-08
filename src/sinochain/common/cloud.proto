@@ -1,0 +1,44 @@
+/*
+SPDX-License-Identifier: Apache-2.0
+PROGRAMMERS: carrie
+*/
+
+syntax = "proto3";
+
+package common;
+
+// These status codes are intended to resemble selected HTTP status codes
+enum Status {
+    UNKNOWN = 0;
+    SUCCESS = 200;
+    BAD_REQUEST = 400;
+    FORBIDDEN = 403;
+    NOT_FOUND = 404;
+    REQUEST_ENTITY_TOO_LARGE = 413;
+    INTERNAL_SERVER_ERROR = 500;
+    NOT_IMPLEMENTED = 501;
+    SERVICE_UNAVAILABLE = 503;
+    // 2018/08/15 Tsing + 2
+    // add timeout status
+    REQUEST_TIMEOUT = 2001;
+    // add no client statuc
+    NO_CLIENT = 2002;
+}
+
+message Envelope {
+    Status status = 1;
+    string info = 2;
+    string channel = 3;
+    uint64 seqnum = 4;
+    int64 elapsed = 5;
+    repeated string tag = 6;
+    bytes payload = 7;
+    // 2018/08/25 Tsing + 2 add execute begin time and end time
+    uint64 beginTime = 8;
+    uint64 endTime = 9;
+}
+
+service CloudBD {
+    rpc Broadcast(stream Envelope) returns (stream Envelope) {}
+    rpc Deliver(stream Envelope) returns (stream Envelope) {}
+}

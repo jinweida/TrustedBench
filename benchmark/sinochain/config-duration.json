@@ -1,0 +1,47 @@
+{
+    "blockchain": {
+      "type": "sinochain",
+      "config": "benchmark/sinochain/sinochain.json"
+    },
+    "test": {
+      "name": "sinochain test",
+      "description": "Sinochain test!",
+      "clients": {
+        "type": "zookeeper",
+        "zoo" : {
+          "server": "127.0.0.1:12181",
+          "clientsPerHost": 2
+        }
+      },
+      "rounds": [
+        {
+          "label": "create-account",
+          "txDuration": [
+            60
+          ],
+          "rateControl": [
+            {
+              "type": "fixed-rate",
+              "opts": {
+                "tps": 100
+              }
+            }
+          ],
+          "callback": "benchmark/sinochain/create.js"
+        }
+      ]
+    },
+    "monitor": {
+      "type": [
+        
+      ],
+      "process": [
+        {
+          "command": "node",
+          "arguments": "local-client.js",
+          "multiOutput": "avg"
+        }
+      ],
+      "interval": 10
+    }
+  }

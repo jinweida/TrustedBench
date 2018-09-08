@@ -384,6 +384,9 @@ class Client{
         }
         this.zoo.hosts.forEach((host, idx)=>{
             let data;
+            // sinochain: add zoo client index to message
+            message.zooClientIdx = idx;
+            // end sinochain
             if(Array.isArray(clientArgs)) {
                 let msg = message;
                 msg.clientargs = clientArgs.slice(idx * argsSlice, idx * argsSlice+argsSlice);

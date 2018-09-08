@@ -180,7 +180,8 @@ function processResult(results, label){
         let idx = report.addBenchmarkRound(label);
         report.setRoundPerformance(idx, resultTable);
         let resourceTable = monitor.getDefaultStats();
-        if(resourceTable.length > 0) {
+        // sinochain: add resourceTable check
+        if(resourceTable && resourceTable.length > 0) {
             log('### resource stats ###');
             printTable(resourceTable);
             report.setRoundResource(idx, resourceTable);
@@ -346,6 +347,9 @@ module.exports.run = function(configFile, networkFile) {
                 end.stderr.pipe(process.stderr);
             }
             t.end();
+            // sinochain: add process force exit
+            process.exit(0);
+            // end sinochain
         }).catch( (err) => {
             demo.stopWatch();
             log('unexpected error, ' + (err.stack ? err.stack : err));
@@ -357,6 +361,9 @@ module.exports.run = function(configFile, networkFile) {
                 end.stderr.pipe(process.stderr);
             }
             t.end();
+            // sinochain: add process force exit
+            process.exit(0);
+            // end sinochain
         });
     });
 };

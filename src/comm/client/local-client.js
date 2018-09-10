@@ -140,9 +140,10 @@ async function runFixedNumber(msg, cb, context) {
             addResult(result);
             return Promise.resolve();
         }));
-        await rateControl.applyRateControl(startTime, txNum, results);
+        await rateControl.applyRateControl(startTime, txNum++, results, resultStats);
     }
 
+    // Error: too many elements passed to Promise.all
     await Promise.all(promises);
     await rateControl.end();
     return await blockchain.releaseContext(context);
@@ -164,16 +165,14 @@ async function runDuration(msg, cb, context) {
     await cb.init(blockchain, context, msg.args);
     startTime = Date.now();
 
-    let promises = [];
     while ((Date.now() - startTime)/1000 < duration) {
-        promises.push(cb.run().then((result) => {
+        cb.run().then((result) => {
             addResult(result);
             return Promise.resolve();
-        }));
-        await rateControl.applyRateControl(startTime, txNum, results);
-    }
+        });
 
-    await Promise.all(promises);
+        await rateControl.applyRateControl(startTime, txNum++, results, resultStats);
+    }
     await rateControl.end();
     return await blockchain.releaseContext(context);
 }
@@ -225,6 +224,9 @@ function doTest(msg) {
         clearUpdateInter();
         return cb.end();
     }).then(() => {
+        // global.gc();
+        // dump();
+        // console.dir(hd.end(), { depth: 6 });
         if (resultStats.length > 0) {
             return Promise.resolve(resultStats[0]);
         }
@@ -268,3 +270,17 @@ process.on('message', function(message) {
         process.send({type: 'error', data: 'unknown message type'});
     }
 });
+
+function debug_test(msg) {
+    let cb = require(path.join(__dirname, '../../..', msg.cb));
+    blockchain = new bc(path.join(__dirname, '../../..', msg.config));    
+    blockchain.getContext(msg.label, msg.clientargs)
+        .then((context) => {
+           if (msg.txDuration) {
+               return runDuration(msg, cb, context);
+           } else {
+               return runFixedNumber(msg, cb, context);
+           }
+        })
+}
+module.exports.debug_test = debug_test;

@@ -60,6 +60,11 @@ let RateControl = class {
             this.controller = new LinearRateController(blockchain, rateControl.opts);
             break;
         }
+        case 'trustsql-rate': {
+            const TrustSQLRateController = require('./trustsqlRate.js');
+            this.controller = new TrustSQLRateController(blockchain, rateControl.opts);
+            break;
+        }
         default:
             throw new Error('Unknown rate control type ' + rateControl.type);
         }
@@ -81,8 +86,8 @@ let RateControl = class {
      * @param {Object[]} results current array of results
      * @return {Promise} the return promise
      */
-    applyRateControl(start, idx, results) {
-        return this.controller.applyRateControl(start, idx, results);
+    applyRateControl(start, idx, results, resultStats) {
+        return this.controller.applyRateControl(start, idx, results, resultStats);
     }
 
     /**

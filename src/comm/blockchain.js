@@ -38,6 +38,11 @@ class Blockchain {
             this.bcType = 'composer';
             this.bcObj = new composer(configPath);
         }
+        else if(config.hasOwnProperty('trustsql')) {
+            let trustsql = require('../trustsql/trustsql.js');
+            this.bcType = 'trustsql';
+            this.bcObj = new trustsql(configPath);
+        }
         else {
             this.bcType = 'unknown';
             throw new Error('Unknown blockchain config file ' + configPath);
@@ -152,6 +157,9 @@ class Blockchain {
         let delays = [];
         for(let i = 0 ; i < results.length ; i++) {
             let stat   = results[i];
+            if(stat === undefined) {
+                continue;
+            }
             let create = stat.GetTimeCreate();
 
             if(typeof minCreate === 'undefined') {
@@ -201,6 +209,13 @@ class Blockchain {
             }
         }
 
+        if(succ === 0) {
+            minFinal = minCreate;
+            maxFinal = maxCreate;
+            minDelay = 0;
+            maxDelay = 0;
+            delay = 0;
+        }
         let stats = {
             'succ' : succ,
             'fail' : fail,

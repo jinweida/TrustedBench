@@ -1,0 +1,27 @@
+{
+    "process_count": 20,
+    "issue": {
+        "enable": true,
+        "number": 10000
+    },
+    "transfer": {
+        "enable": true,
+        "number": 20,
+        "start_privkey_index": 1
+    },
+    "file": {
+        "sql_path": "sqls",
+        "utxo_path": "utxos",
+        "file_size": 200000,
+        "file_start_id": 0
+    },
+    "monitor": {
+        "enable": false,
+        "file_system_id": 6,
+        "limit": 80,
+        "sleep_time": 600000
+    },
+    "callback": "generator.js",
+    "keys_path": "../../keys.key",
+    "log_path": "../../logs/generator.log"
+}

@@ -44,6 +44,9 @@ class FixedRate extends RateInterface {
         const tps = this.options.tps;
         const tpsPerClient = msg.totalClients ? (tps / msg.totalClients) : tps;
         this.sleepTime = (tpsPerClient > 0) ? 1000/tpsPerClient : 0;
+
+        this.unfinished_per_client = this.options.unfinished_per_client ? this.options.unfinished_per_client : 10000;
+        this.sleep_time = this.options.sleep_time ? this.options.sleep_time : 100;
     }
 
     /**
@@ -54,7 +57,7 @@ class FixedRate extends RateInterface {
     * @param {Object[]} currentResults current result set
     * @return {Promise} the return promise
     */
-    applyRateControl(start, idx, currentResults) {
+    applyRateControl(start, idx, currentResults, resultStats) {
         if(this.sleepTime === 0) {
             return Promise.resolve();
         }
@@ -63,6 +66,12 @@ class FixedRate extends RateInterface {
             return Sleep(diff);
         }
         else {
+            // if(resultStats.length > 0) {
+            //     let unfinished = idx - resultStats[0].succ - resultStats[0].fail;
+            //     if(unfinished >= this.unfinished_per_client) {
+            //         return Sleep(this.sleep_time);
+            //     }
+            // }
             return Promise.resolve();
         }
     }

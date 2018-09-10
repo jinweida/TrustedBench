@@ -30,6 +30,8 @@ let demo = require('../gui/src/demo.js');
 let absConfigFile, absNetworkFile;
 let absCaliperDir = path.join(__dirname, '..', '..');
 
+var Logger = require("../trustsql/log.js");
+
 /**
  * Generate mustache template for test report
  */
@@ -116,6 +118,7 @@ function getResultValue(r) {
             row.push(r.delay.detail[Math.floor(r.delay.detail.length * 0.75)].toFixed(2) + ' s');
         }*/
 
+        Logger.error(r.final.max, " ", r.create.min, " ", r.final.max - r.create.min, " ", r.succ);
         (r.final.max === r.final.min) ? row.push(r.succ + ' tps') : row.push(((r.succ / (r.final.max - r.create.min)).toFixed(0)) + ' tps');
     }
     catch (err) {

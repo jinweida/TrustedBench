@@ -76,6 +76,7 @@ class PidRate extends RateInterface {
         // Update current transaction backlog error
         // error = what you want - what you have
         let error = this.targetLoad - (idx - currentResults.length);
+        console.log(idx, currentResults.length, error);
 
         if (this.showVars) {
             Log('Current load error: ', error);

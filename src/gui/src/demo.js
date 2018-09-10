@@ -17,10 +17,15 @@ var demoXLen = 60;     // default x axis length
 var demoData;
 var demoInterObj = null;
 var demoSessionID = 0;
+
+
+var sd = require("silly-datetime");
+var fs = require('fs');
+var Logger = require("../../trustsql/log.js");
+
 function demoInit() {
     var fs = require('fs');
     demoData =  {
-        maxlen : 300,
         throughput: {
             x: [],
             submitted: [0],
@@ -49,20 +54,33 @@ function demoInit() {
 }
 module.exports.init = demoInit;
 
+function demoRefreshX() {
+    var len = demoData.throughput.submitted.length;
+    while(demoData.throughput.x.length < len) {
+        if(demoData.throughput.x.length === 0) {
+            demoData.throughput.x[0] = 0;
+        }
+        else {
+            let last = demoData.throughput.x[demoData.throughput.x.length - 1];
+            demoData.throughput.x.push(last + demoInterval);
+        }
+    }
+    len = demoData.latency.max.length;
+    while(demoData.latency.x.length < len) {
+        if(demoData.latency.x.length === 0) {
+            demoData.latency.x[0] = 0;
+        }
+        else {
+            let last = demoData.latency.x[demoData.latency.x.length - 1];
+            demoData.latency.x.push(last + demoInterval);
+        }
+    }
+}
+
 function demoAddThroughput(sub, suc, fail) {
     demoData.throughput.submitted.push(sub/demoInterval);
     demoData.throughput.succeeded.push(suc/demoInterval);
     demoData.throughput.failed.push(fail/demoInterval);
-    if (demoData.throughput.x.length < demoData.throughput.submitted.length) {
-        let last = demoData.throughput.x[demoData.throughput.x.length - 1];
-        demoData.throughput.x.push(last + demoInterval);
-    }
-    if (demoData.throughput.submitted.length > demoData.maxlen) {
-        demoData.throughput.submitted.shift();
-        demoData.throughput.succeeded.shift();
-        demoData.throughput.failed.shift();
-        demoData.throughput.x.shift();
-    }
     demoData.summary.txSub  += sub;
     demoData.summary.txSucc += suc;
     demoData.summary.txFail += fail;
@@ -71,18 +89,9 @@ function demoAddLatency(max, min, avg) {
     demoData.latency.max.push(max);
     demoData.latency.min.push(min);
     demoData.latency.avg.push(avg);
-    if(demoData.latency.x.length < demoData.latency.max.length) {
-        let last = demoData.latency.x[demoData.latency.x.length - 1];
-        demoData.latency.x.push(last + demoInterval);
-    }
-    if (demoData.latency.max.length > demoData.maxlen) {
-        demoData.latency.max.shift();
-        demoData.latency.min.shift();
-        demoData.latency.avg.shift();
-        demoData.latency.x.shift();
-    }
 }
 
+let results = [];
 function demoRefreshData(updates) {
     if(updates.length  === 0) {
         demoAddThroughput(0,0,0);
@@ -121,28 +130,42 @@ function demoRefreshData(updates) {
 
     }
 
+    demoRefreshX();
+
    // if(started) {
-        console.log('[Transaction Info] - Submitted: ' + demoData.summary.txSub
-        + ' Succ: ' + demoData.summary.txSucc
-        + ' Fail:' +  demoData.summary.txFail
-        + ' Unfinished:' + (demoData.summary.txSub - demoData.summary.txSucc - demoData.summary.txFail));
+       let msg = '[Transaction Info] - Submitted: ' + demoData.summary.txSub
+                    + ' Succ: ' + demoData.summary.txSucc
+                    + ' Fail:' +  demoData.summary.txFail
+                    + ' Unfinished:' + (demoData.summary.txSub - demoData.summary.txSucc - demoData.summary.txFail);
+        Logger.debug(msg);
    // }
 
-    var fs = require('fs');
+    let current_time = Date.now();
+    results.push([current_time, demoData.summary.txSucc ]);
+    let total_succ = 0;
+    let last_time = 0;
+    if(results.length > 2) {
+        total_succ = demoData.summary.txSucc - results[1][1];
+        last_time = results[1][0];
+    }
+
+    let tps_per_second = ((total_succ / ((current_time - last_time) / 1000)).toFixed(0));
+    let tps_from_start = (((demoData.summary.txSucc - results[0][1]) / ((current_time - results[0][0]) / 1000)).toFixed(0));
+    Logger.debug('tps per second: ' + tps_per_second); 
+    Logger.debug('tps from start: ' + tps_from_start); 
+
     fs.writeFileSync(demoFile,  JSON.stringify(demoData));
+    Logger.info(msg);
+    Logger.info("tps-per-second: " + tps_per_second.toString() + "\ttps-from-start: " + tps_from_start.toString());
+
+    results = [ results[0], results[results.length - 1] ];
 }
 
 var client;
 var started = false;
-var timelength = 0;
 var updateTail = 0;
 var updateID   = 0;
 function update() {
-    timelength++;
-    if (typeof client === 'undefined') {
-        demoRefreshData([]);
-        return;
-    }
     var updates = client.getUpdates();
     if(updates.id > updateID) { // new buffer
         updateTail = 0;
@@ -160,7 +183,6 @@ function demoStartWatch(clientObj) {
     //demoProcesses = processes.slice();
     client  = clientObj;
     started = true;
-    timelength = 0;
     if(demoInterObj === null) {
         updateTail = 0;
         updateID   = 0;
@@ -182,10 +204,9 @@ function demoStopWatch(output) {
     if(demoInterObj) {
         clearInterval(demoInterObj);
         demoInterObj = null;
+        update();
     }
     demoData.report = output;
-    update();
-    timelength = 0;
 }
 
 module.exports.stopWatch = demoStopWatch;

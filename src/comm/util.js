@@ -18,6 +18,7 @@ const path = require('path');
 // comm --> src --> root
 const rootDir = path.join('..', '..');
 
+var Logger = require("../trustsql/log.js");
 
 /**
  * Internal Utility class for Caliper
@@ -39,7 +40,7 @@ class Util {
      */
     static log(...msg) {
         // eslint-disable-next-line no-console
-        console.log(...msg);
+        Logger.debug(...msg);
     }
 
     /**

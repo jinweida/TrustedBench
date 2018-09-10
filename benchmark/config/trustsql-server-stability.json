@@ -1,0 +1,55 @@
+{
+  "trustsql": {
+    "context": {
+
+      "method": "pool",
+
+      "logs": {
+        "state_log_path": "../../logs/state.log",
+        "error_log_path": "../../logs/error.log",
+        "debug": true 
+      },
+      "file": {
+        "read_file": false,
+        "remove_file": false,
+        "sql_path": "/../generator/sqls/sql",
+        "file_start_id": 0
+      },
+      "connection": {
+        "connection_limit": 100,
+        "acquire_timeout": 10000,
+        "connect_timeout": 10000
+      },
+      "nodes": [
+        {
+          "host": "127.0.0.1",
+          "port": 0,
+          "user": "",
+          "password": "",
+          "database": "",
+          "debug": false
+        }
+      ],
+      "asset": {
+        "ips": [ "127.0.0.1" ],
+        "query_timeout": 8000,
+        "keys_path": "keys.key"
+      },
+     "transfer": {
+        "ips": [ "127.0.0.1" ],
+        "query_timeout": 8000,
+        "keys_path": "keys.key"
+      },
+      "contract": {
+        "ip": "",
+        "port": 0
+      }
+    }
+  },
+  "info" : {
+    "Version": "1.0",
+    "Size": "4 Peers",
+    "Orderer": "Solo",
+    "Distribution": "Single Host"
+  }
+}

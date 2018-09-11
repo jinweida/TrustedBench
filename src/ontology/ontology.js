@@ -223,8 +223,8 @@ class Ontology extends BlockchainInterface {
     async waitABlock(destHeight) {
         if (typeof destHeight === 'undefined') {
             let curr = await this.getHeight();
-            console.log('dest height is', curr);
             destHeight = curr + 1;
+            log('wait a block, current height is', curr, ', destHeight is', destHeight);
         }
         let newHeight;
         while (true) {

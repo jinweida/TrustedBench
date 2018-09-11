@@ -23,7 +23,7 @@ let txUpdateTime = 1000;
 let trimType = 0;
 let trim = 0;
 let startTime = 0;
-let forceUpdateTxNum = 200;
+let forceUpdateTxNum = 1000;
 
 /**
  * Calculate realtime transaction statistics and send the txUpdated message

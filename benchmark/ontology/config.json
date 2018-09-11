@@ -12,19 +12,19 @@
     "description": "This is ontology tps test!",
     "clients": {
       "type": "local",
-      "number": 1
+      "number": 2
     },
     "rounds": [
       {
         "label": "transferONG",
         "txNumber": [
-          1000
+          10000
         ],
         "rateControl": [
           {
             "type": "fixed-rate",
             "opts": {
-              "tps": 300
+              "tps": 2500
             }
           }
         ],
@@ -36,13 +36,13 @@
       {
         "label": "invokeContract",
         "txNumber": [
-          500
+          10000
         ],
         "rateControl": [
           {
             "type": "fixed-rate",
             "opts": {
-              "tps": 250
+              "tps": 2500
             }
           }
         ],

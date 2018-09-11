@@ -22,7 +22,6 @@ class Ontology extends BlockchainInterface {
         this.contractConfig = blockChainConfig.ontology.contract;
         this.peerWallets = blockChainConfig.ontology.peers;
         this.server = blockChainConfig.ontology.server;
-        this.querySever = this.getRandomServerAddr();
         this.password = blockChainConfig.ontology.password; // peers and self password is same
         let walletFileContent = fs.readFileSync(blockChainConfig.ontology.wallet, 'utf-8');
         this.wallet = ontSdk.Wallet.parseJson(walletFileContent);
@@ -192,7 +191,7 @@ class Ontology extends BlockchainInterface {
      */
     getHeight() {
         // in case of block height not sync problem, fix request server
-        return NetUtil.getHeight(this.querySever);
+        return NetUtil.getHeight(this.getRandomServerAddr());
     }
 
     /**
@@ -202,7 +201,7 @@ class Ontology extends BlockchainInterface {
      */
     getBlockTxHashes(height) {
         // in case of block height not sync problem, fix request server
-        return NetUtil.getBlockTxHashes(this.querySever, height);
+        return NetUtil.getBlockTxHashes(this.getRandomServerAddr(), height);
     }
 
     /**
@@ -212,7 +211,7 @@ class Ontology extends BlockchainInterface {
      */
     insureTx(txHash) {
         // in case of block height not sync problem, fix request server
-        return NetUtil.insureTx(this.querySever, txHash);
+        return NetUtil.insureTx(this.getRandomServerAddr(), txHash);
     }
 
     /**
@@ -240,34 +239,26 @@ class Ontology extends BlockchainInterface {
     }
 
     /**
-     * wait two continuous empty block
-     */
-    async waitTwoEmptyBlock() {
-        let emptyBlockNum = 0;
-        while (emptyBlockNum < 2) {
-            await this.waitABlock();
-            let currentHeight = await this.getHeight();
-            let txHashes = await this.getBlockTxHashes(currentHeight);
-            let txNum = 0;
-            if (typeof txHashes === 'undefined' || txHashes.length === 0) {
-                emptyBlockNum++;
-            } else {
-                emptyBlockNum = 0;
-                txNum = txHashes.length;
-            }
-            log('wait two empty block, current height is', currentHeight, 'txs is ', txNum);
-        }
-    }
-
-    /**
      * get block generated time
      * @param{int} height is block height
      * @return {Promise} block timestamp
      */
     getBlockGenerateTime(height) {
-        return NetUtil.getBlock(this.getRandomServerAddr(), height).then((block) => {
+        return this.getBlockByHeight(height).then((block) => {
+            if (typeof block === 'undefined'){
+                return;
+            }
             return block.Header.Timestamp;
         });
+    }
+
+    /**
+     * get block by height
+     * @param{int} height is block height
+     * @return {Promise} block timestamp
+     */
+    getBlockByHeight(height) {
+        return NetUtil.getBlock(this.getRandomServerAddr(), height);
     }
 }
 

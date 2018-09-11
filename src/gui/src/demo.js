@@ -1,10 +1,10 @@
 /**
-* Copyright 2017 HUAWEI. All Rights Reserved.
-*
-* SPDX-License-Identifier: Apache-2.0
-*
-* @file Implementation of the temporary demo
-*/
+ * Copyright 2017 HUAWEI. All Rights Reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * @file Implementation of the temporary demo
+ */
 
 
 'use strict'
@@ -17,10 +17,11 @@ var demoXLen = 60;     // default x axis length
 var demoData;
 var demoInterObj = null;
 var demoSessionID = 0;
+
 function demoInit() {
     var fs = require('fs');
-    demoData =  {
-        maxlen : 300,
+    demoData = {
+        maxlen: 300,
         throughput: {
             x: [],
             submitted: [0],
@@ -41,18 +42,19 @@ function demoInit() {
         },
         report: ''
     };
-    for(let i = 0 ; i < demoXLen ; i++) {
+    for (let i = 0; i < demoXLen; i++) {
         demoData.throughput.x.push(i * demoInterval);
         demoData.latency.x.push(i * demoInterval);
     }
-    fs.writeFileSync(demoFile,  JSON.stringify(demoData));
+    fs.writeFileSync(demoFile, JSON.stringify(demoData));
 }
+
 module.exports.init = demoInit;
 
 function demoAddThroughput(sub, suc, fail) {
-    demoData.throughput.submitted.push(sub/demoInterval);
-    demoData.throughput.succeeded.push(suc/demoInterval);
-    demoData.throughput.failed.push(fail/demoInterval);
+    demoData.throughput.submitted.push(sub / demoInterval);
+    demoData.throughput.succeeded.push(suc / demoInterval);
+    demoData.throughput.failed.push(fail / demoInterval);
     if (demoData.throughput.x.length < demoData.throughput.submitted.length) {
         let last = demoData.throughput.x[demoData.throughput.x.length - 1];
         demoData.throughput.x.push(last + demoInterval);
@@ -63,15 +65,16 @@ function demoAddThroughput(sub, suc, fail) {
         demoData.throughput.failed.shift();
         demoData.throughput.x.shift();
     }
-    demoData.summary.txSub  += sub;
+    demoData.summary.txSub += sub;
     demoData.summary.txSucc += suc;
     demoData.summary.txFail += fail;
 }
+
 function demoAddLatency(max, min, avg) {
     demoData.latency.max.push(max);
     demoData.latency.min.push(min);
     demoData.latency.avg.push(avg);
-    if(demoData.latency.x.length < demoData.latency.max.length) {
+    if (demoData.latency.x.length < demoData.latency.max.length) {
         let last = demoData.latency.x[demoData.latency.x.length - 1];
         demoData.latency.x.push(last + demoInterval);
     }
@@ -84,36 +87,36 @@ function demoAddLatency(max, min, avg) {
 }
 
 function demoRefreshData(updates) {
-    if(updates.length  === 0) {
-        demoAddThroughput(0,0,0);
-        demoAddLatency(0,0,0);
+    if (updates.length === 0) {
+        demoAddThroughput(0, 0, 0);
+        demoAddLatency(0, 0, 0);
     }
     else {
         var sub = 0, suc = 0, fail = 0;
         var deMax = -1, deMin = -1, deAvg = 0;
-        for(let i = 0 ; i < updates.length ; i++) {
+        for (let i = 0; i < updates.length; i++) {
             let data = updates[i];
             sub += data.submitted;
             suc += data.committed.succ;
             fail += data.committed.fail;
 
-            if(data.committed.succ > 0) {
-                if(deMax === -1 || deMax < data.committed.delay.max) {
+            if (data.committed.succ > 0) {
+                if (deMax === -1 || deMax < data.committed.delay.max) {
                     deMax = data.committed.delay.max;
                 }
-                if(deMin === -1 || deMin > data.committed.delay.min) {
+                if (deMin === -1 || deMin > data.committed.delay.min) {
                     deMin = data.committed.delay.min;
                 }
                 deAvg += data.committed.delay.sum;
             }
         }
-        if(suc > 0) {
+        if (suc > 0) {
             deAvg /= suc;
         }
         demoAddThroughput(sub, suc, fail);
 
-        if(deMax === NaN || deMin === NaN || deAvg === 0) {
-            demoAddLatency(0,0,0);
+        if (deMax === NaN || deMin === NaN || deAvg === 0) {
+            demoAddLatency(0, 0, 0);
         }
         else {
             demoAddLatency(deMax, deMin, deAvg);
@@ -121,22 +124,26 @@ function demoRefreshData(updates) {
 
     }
 
-   // if(started) {
-        console.log('[Transaction Info] - Submitted: ' + demoData.summary.txSub
+    // if(started) {
+    console.log('[Transaction Info] - Submitted: ' + demoData.summary.txSub
         + ' Succ: ' + demoData.summary.txSucc
-        + ' Fail:' +  demoData.summary.txFail
+        + ' Fail:' + demoData.summary.txFail
         + ' Unfinished:' + (demoData.summary.txSub - demoData.summary.txSucc - demoData.summary.txFail));
-   // }
+    // }
 
     var fs = require('fs');
-    fs.writeFileSync(demoFile,  JSON.stringify(demoData));
+    fs.writeFileSync(demoFile, JSON.stringify(demoData));
 }
 
 var client;
 var started = false;
 var timelength = 0;
 var updateTail = 0;
-var updateID   = 0;
+var updateID = 0;
+var blockChain = {};
+var chainHeight = 0;
+var isUpdatingChain = false; // use to lock chain height one by one
+
 function update() {
     timelength++;
     if (typeof client === 'undefined') {
@@ -144,30 +151,56 @@ function update() {
         return;
     }
     var updates = client.getUpdates();
-    if(updates.id > updateID) { // new buffer
+    if (updates.id > updateID) { // new buffer
         updateTail = 0;
-        updateID   = updates.id;
+        updateID = updates.id;
     }
     var data = [];
-    var len  = updates.data.length;
-    if(len > updateTail) {
+    var len = updates.data.length;
+    if (len > updateTail) {
         data = updates.data.slice(updateTail, len);
         updateTail = len;
     }
     demoRefreshData(data);
+
+    blockChain.getHeight().then((height) => {
+        if (height >= chainHeight && !isUpdatingChain) {
+            isUpdatingChain = true;
+            blockChain.getBlockByHeight(chainHeight).then((block) => {
+                if (typeof block !== 'undefined') {
+                    let txHashes = [];
+                    block.Transactions.forEach((item, index) => {
+                        txHashes.push(item.Hash);
+                    });
+                    let msg = {
+                        type: 'txHashes',
+                        height: block.Header.Height,
+                        time: block.Header.Timestamp * 1000,
+                        txHashes: txHashes
+                    };
+                    client.sendMessage(msg);
+                    chainHeight++;
+                }
+                isUpdatingChain = false;
+            });
+        }
+    });
 }
+
 function demoStartWatch(clientObj) {
     //demoProcesses = processes.slice();
-    client  = clientObj;
+    client = clientObj;
     started = true;
     timelength = 0;
-    if(demoInterObj === null) {
+    if (demoInterObj === null) {
         updateTail = 0;
-        updateID   = 0;
+        updateID = 0;
         // start a interval to query updates
         demoInterObj = setInterval(update, demoInterval * 1000);
     }
+    blockChain = clientObj.blockchain;
 }
+
 module.exports.startWatch = demoStartWatch;
 
 function demoPauseWatch() {
@@ -179,7 +212,7 @@ function demoPauseWatch() {
 module.exports.pauseWatch = demoPauseWatch;
 
 function demoStopWatch(output) {
-    if(demoInterObj) {
+    if (demoInterObj) {
         clearInterval(demoInterObj);
         demoInterObj = null;
     }

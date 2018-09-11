@@ -334,10 +334,19 @@ class Blockchain {
     /**
      * get block generated time
      * @param{int} height is block height
-     * @return {Promise} block timestamp
+     * @return {Promise} block
      */
     getBlockGenerateTime(height) {
         return this.bcObj.getBlockGenerateTime(height);
+    }
+
+    /**
+     * get block by height
+     * @param{int} height is block height
+     * @return {Promise} block timestamp
+     */
+    getBlockByHeight(height) {
+        return this.bcObj.getBlockByHeight(height);
     }
 }
 

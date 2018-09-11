@@ -3,6 +3,7 @@
 const axios = require('axios');
 const Util = require('../comm/util.js');
 const log = Util.log;
+const timeout = 10 * 1000;
 
 /**
  * net util of ontology
@@ -19,7 +20,7 @@ class NetUtil {
             'Action': 'sendrawtransaction',
             'Version': '1.0.0',
             'Data': txData
-        }).then(function (response) {
+        }, {timeout: timeout}).then(function (response) {
             if (response.data.Error !== 0) {
                 log('postTx response:', response.data, 'args is', txData);
                 return -1;
@@ -37,7 +38,7 @@ class NetUtil {
      * @return {Promise} the block height
      */
     static getHeight(server) {
-        return axios.get(server + '/api/v1/block/height')
+        return axios.get(server + '/api/v1/block/height', {timeout: timeout})
             .then(function (response) {
                 if (response.data.Error !== 0) {
                     log('getHeight response:', response.data, 'args is', server);
@@ -58,7 +59,7 @@ class NetUtil {
      * @return {string[]} all tx hashes in the block
      */
     static getBlockTxHashes(server, height) {
-        return axios.get(server + '/api/v1/block/transactions/height/' + height)
+        return axios.get(server + '/api/v1/block/transactions/height/' + height, {timeout: timeout})
             .then(function (response) {
                 if (response.data.Error !== 0) {
                     log('getBlockTxHashes response:', response.data, 'args is', height);
@@ -78,7 +79,7 @@ class NetUtil {
      * @return {Promise} tx is confirmed or not
      */
     static insureTx(server, txHash) {
-        return axios.get(server + '/api/v1/transaction/' + txHash)
+        return axios.get(server + '/api/v1/transaction/' + txHash, {timeout: timeout})
             .then(function (response) {
                 return response.data.Error === 0;
             })
@@ -95,17 +96,16 @@ class NetUtil {
      * @return {Promise} block
      */
     static getBlock(server, height) {
-        return axios.get(server + '/api/v1/block/details/height/' + height)
+        return axios.get(server + '/api/v1/block/details/height/' + height, {timeout: timeout})
             .then(function (response) {
                 if (response.data.Error !== 0) {
                     log('getBlock response:', response.data, 'args is', height);
-                    return -1;
+                    return;
                 }
                 return response.data.Result;
             })
             .catch(function (error) {
                 log('getBlock err:', error.message);
-                return false;
             });
     }
 
@@ -116,17 +116,17 @@ class NetUtil {
      * @return {Promise} balance json, contained ont and ong
      */
     static getBalance(server, addr) {
-        return axios.get(server + '/api/v1/balance/' + addr)
+        return axios.get(server + '/api/v1/balance/' + addr, {timeout: timeout})
             .then(function (response) {
                 if (response.data.Error !== 0) {
                     log('getBalance response:', response.data, 'args is', addr);
-                    return -1;
+                    return 0;
                 }
                 return response.data.Result;
             })
             .catch(function (error) {
                 log('getBlock err:', error.message);
-                return false;
+                return 0;
             });
     }
 }

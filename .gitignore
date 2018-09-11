@@ -28,8 +28,8 @@ zookeeper.out
 # Ignore IDE files
 .vscode/*
 
-transfer.txt
-invoke.txt
+transfer*.txt
+invoke*.txt
 ontology
 !*/ontology/
 wallet*.dat

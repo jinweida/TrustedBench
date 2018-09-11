@@ -12,7 +12,6 @@ const bc = require('../blockchain.js');
 const RateControl = require('../rate-control/rateControl.js');
 const Util = require('../util.js');
 const log = Util.log;
-const _ = require('lodash');
 
 let blockchain;
 let results = [];
@@ -23,6 +22,10 @@ let txUpdateTime = 1000;
 let trimType = 0;
 let trim = 0;
 let startTime = 0;
+let notSureTxStatus = new Map();
+let emptyBlockNum = 0;
+let lastNoEmptyBlockTime = 0;
+// let backupTxHashes = []; //
 
 /**
  * Calculate realtime transaction statistics and send the txUpdated message
@@ -121,78 +124,6 @@ function submitCallback(count) {
 }
 
 /**
- * If three sequential empty block has been generated, it can be considered that whole tx has been processed.
- * @param{TxStatus[]} notsureTxStatus unconfirmed transactions
- * @param{int} startHeight confirm start height
- * @return{Promise<any>} empty promise
- */
-async function insureTxs(notsureTxStatus, startHeight) {
-    // first, record current height of block chain, and try to confirm all notsure txs
-    log('insure tx start height is', startHeight);
-    let emptyBlockNum = 0;
-    let currentHeiht = startHeight;
-    let lastBlockTime = 0; // record last no-empty block generate time, or last confirm tx time
-    let notsureTxHashes = [];
-    notsureTxStatus.forEach((status, index) => {
-        notsureTxHashes.push(status.GetID());
-    });
-    while(true) {
-        let txHashes = await blockchain.getBlockTxHashes(currentHeiht);
-        log('insure tx, current height is', currentHeiht);
-        if (typeof txHashes === 'undefined' ) {
-            currentHeiht--;
-        }else if (txHashes.length === 0) {
-            emptyBlockNum++;
-            log('insure tx, meet empty block, height', currentHeiht);
-        } else {
-            // ontology timestamp is 1000 times smaller
-            lastBlockTime = await blockchain.getBlockGenerateTime(currentHeiht) * 1000;
-            emptyBlockNum = 0;
-            let confirmedTxHashes = _.intersection(notsureTxHashes, txHashes);
-            confirmedTxHashes.forEach((txHash, index) => {
-                for (let i = 0; i < notsureTxStatus.length; i++) {
-                    if (notsureTxStatus[i].GetID() === txHash) {
-                        notsureTxStatus[i].SetStatusSuccess();
-                        notsureTxStatus[i].SetFinalTime(lastBlockTime);
-                        addResult(notsureTxStatus[i]);
-                    }
-                }
-            });
-            notsureTxHashes = _.difference(notsureTxHashes, txHashes);
-            log('insure tx, confirmed num is %d, not sure num is', confirmedTxHashes.length, notsureTxHashes.length);
-        }
-        if (notsureTxHashes.length === 0 || emptyBlockNum >= 2) {
-            break;
-        } else {
-            currentHeiht++;
-            let latestHeight = await blockchain.getHeight();
-            log('insure tx, latestHeight is', latestHeight);
-            if (latestHeight < currentHeiht) {
-                // insure block chain height catch up currentHeight
-                await blockchain.waitABlock(currentHeiht);
-                latestHeight = await blockchain.getHeight();
-                log('insure tx, wait a block, latestHeight is', latestHeight);
-            }
-        }
-    }
-    log('insure tx current height is ', currentHeiht);
-    if (notsureTxHashes.length > 0) {
-        notsureTxHashes.forEach((txHash, index) => {
-            for (let i = 0; i < notsureTxStatus.length; i++) {
-                if (notsureTxStatus[i].GetID() === txHash) {
-                    notsureTxStatus[i].SetStatusFail();
-                    notsureTxStatus[i].SetFinalTime(lastBlockTime);
-                    addResult(notsureTxStatus[i]);
-                    log('insure tx, faile tx is', notsureTxStatus[i].GetID());
-                }
-            }
-        });
-    }
-    log('insure tx ended, faile tx num is', notsureTxHashes.length);
-    return Promise.resolve();
-}
-
-/**
  * Perform test with specified number of transactions
  * @param {JSON} msg start test message
  * @param {Object} cb callback module
@@ -211,7 +142,6 @@ async function runFixedNumber(msg, cb, context) {
     await cb.init(blockchain, context, msg.args);
     startTime = Date.now();
 
-    let notSureTxs = [];
     let promises = [];
     let currentHeight = await blockchain.getHeight();
     log('start send tx, current height is ', currentHeight);
@@ -219,16 +149,16 @@ async function runFixedNumber(msg, cb, context) {
         promises.push(cb.run().then((result) => {
             if (blockchain.getType() === 'ontology') {
                 if (result.GetStatus() !== 'failed') { // tx has not been confirmed yet
-                    notSureTxs.push(result);
+                    notSureTxStatus.set(result.GetID(), result);
                 } else {
                     addResult(result);
                 }
             }
             return Promise.resolve();
         }));
-        // applyRateControl per seconds
-        if (txNum > tps * (Date.now() - startTime) / 1000) {
-            log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
+        // applyRateControl per second
+        if (txNum % (tps / 10) === 0) {
+            // log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
             await Promise.all(promises);
             promises = [];
             txUpdate();
@@ -237,15 +167,15 @@ async function runFixedNumber(msg, cb, context) {
     }
 
     await Promise.all(promises);
-    // wait all tx processed
-    log('all tx has been sended, notSureTxs length is ', notSureTxs.length);
-    if (blockchain.getType() === 'ontology' && notSureTxs.length !== 0) {
-        if (blockchain.bcObj.monitorOnly) {
-            await blockchain.bcObj.waitTwoEmptyBlock();
-        } else {
-            log('notSureTxs.length is', notSureTxs.length);
-            await insureTxs(notSureTxs, currentHeight);
-        }
+    while (emptyBlockNum < 2 && notSureTxStatus.size > 0) {
+        await Util.sleep(1000).then(() => {
+        });
+    }
+    for (let item of notSureTxStatus.values()) {
+        item.SetStatusFail();
+        item.SetFinalTime(lastNoEmptyBlockTime);
+        addResult(item);
+        log('insure tx, failed tx %s', item.GetID());
     }
     await rateControl.end();
     return await blockchain.releaseContext(context);
@@ -270,7 +200,6 @@ async function runDuration(msg, cb, context) {
 
     await cb.init(blockchain, context, msg.args);
     startTime = Date.now();
-    let notSureTxs = [];
 
     let promises = [];
     let currentHeight = await blockchain.getHeight();
@@ -279,16 +208,16 @@ async function runDuration(msg, cb, context) {
         promises.push(cb.run().then((result) => {
             if (blockchain.getType() === 'ontology') {
                 if (result.GetStatus() !== 'failed') { // tx has not been confirmed yet
-                    notSureTxs.push(result);
+                    notSureTxStatus.set(result.GetID(), result);
                 } else {
                     addResult(result);
                 }
             }
             return Promise.resolve();
         }));
-        // applyRateControl per seconds
-        if (txNum > tps * (Date.now() - startTime) / 1000) {
-            log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
+        // applyRateControl per second
+        if (txNum % (tps / 10) === 0) {
+            // log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
             await Promise.all(promises);
             promises = [];
             txUpdate();
@@ -298,14 +227,16 @@ async function runDuration(msg, cb, context) {
 
     await Promise.all(promises);
     // wait all tx processed
-    log('all tx has been sended, notSureTxs length is ', notSureTxs.length);
-    if (blockchain.getType() === 'ontology' && notSureTxs.length !== 0) {
-        if (blockchain.bcObj.monitorOnly) {
-            await blockchain.bcObj.waitTwoEmptyBlock();
-        } else {
-            log('notSureTxs.length is', notSureTxs.length);
-            await insureTxs(notSureTxs, currentHeight);
-        }
+    log('all tx has been sended, remain notSureTxStatus length is ', notSureTxStatus.length);
+    while (emptyBlockNum < 2 && notSureTxStatus.size > 0) {
+        await Util.sleep(1000).then(() => {
+        });
+    }
+    for (let item of notSureTxStatus.values()) {
+        item.SetStatusFail();
+        item.SetFinalTime(lastNoEmptyBlockTime);
+        addResult(item);
+        log('insure tx, failed tx %s', item.GetID());
     }
     await rateControl.end();
     return await blockchain.releaseContext(context);
@@ -386,6 +317,32 @@ process.on('message', function(message) {
                 }).then(() => {
                     process.send({type: 'testResult', data: result});
                 });
+                break;
+            }
+            case 'txHashes':{
+                let txHashes = message.txHashes;
+                let txNum = txHashes.length;
+                if (txNum === 0 || notSureTxStatus.size === 0) {
+                    emptyBlockNum++;
+                    log('insure tx, receive a empty block, height %d', message.height);
+                } else {
+                    emptyBlockNum = 0;
+                    let timestamp  = message.time;
+                    lastNoEmptyBlockTime = timestamp;
+                    let confirmedNum = 0;
+                    txHashes.forEach((txHash, index) => {
+                        let txStatus = notSureTxStatus.get(txHash);
+                        if (typeof txStatus !== 'undefined'){
+                            txStatus.SetStatusSuccess();
+                            txStatus.SetFinalTime(timestamp);
+                            addResult(txStatus);
+                            notSureTxStatus.delete(txHash);
+                            confirmedNum++;
+                        }
+                    });
+                    log('insure tx, height %d, block txNum %d, block time %d , confirmed num is %d, not sure num is %d',
+                        message.height, txNum, timestamp, confirmedNum, notSureTxStatus.size);
+                }
                 break;
             }
             default: {

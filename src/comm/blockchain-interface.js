@@ -148,6 +148,15 @@ class BlockchainInterface {
     getDefaultTxStats(stats, results) {
         throw new Error('getDefaultTxStats is not implemented for this blockchain system');
     }
+
+
+    /**
+     * get block by height
+     * @param{int} height is block height
+     */
+    getBlockByHeight(height) {
+        throw new Error('getBlockByHeight is not implemented for this blockchain system');
+    }
 }
 
 module.exports = BlockchainInterface;

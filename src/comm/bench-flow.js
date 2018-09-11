@@ -236,6 +236,7 @@ function defaultTest(args, clientArgs, final) {
                 round++;
                 testIdx++;
                 item.roundIdx = round; // propagate round ID to clients
+                client.blockchain  = blockchain;
                 demo.startWatch(client);
 
                 return client.startTest(item, clientArgs, processResult, testLabel).then( () => {

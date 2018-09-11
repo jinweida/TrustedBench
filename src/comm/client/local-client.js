@@ -23,7 +23,6 @@ let txUpdateTime = 1000;
 let trimType = 0;
 let trim = 0;
 let startTime = 0;
-let forceUpdateTxNum = 1000;
 
 /**
  * Calculate realtime transaction statistics and send the txUpdated message
@@ -204,9 +203,8 @@ async function runFixedNumber(msg, cb, context) {
     log('Info: client ' + process.pid + ' start test runFixedNumber()' + (cb.info ? (':' + cb.info) : ''));
     let rateControl = new RateControl(msg.rateControl, blockchain);
     rateControl.init(msg);
-    const tps = rateControl.controller.options.tps;
-    log('tps is %d', tps / msg.totalClients);
-    forceUpdateTxNum = forceUpdateTxNum < tps ? forceUpdateTxNum : tps;
+    const tps = rateControl.controller.options.tps / msg.totalClients;
+    log('tps is %d', tps);
 
     msg.args.txNum = msg.numb;
     msg.args.clientIndex = msg.clientIdx;
@@ -228,11 +226,13 @@ async function runFixedNumber(msg, cb, context) {
             }
             return Promise.resolve();
         }));
-        await rateControl.applyRateControl(startTime, txNum, results);
-        // force update
-        if (txNum % forceUpdateTxNum === 0) {
-            log('force update, txNum is', txNum);
+        // applyRateControl per seconds
+        if (txNum > tps * (Date.now() - startTime) / 1000) {
+            log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
+            await Promise.all(promises);
+            promises = [];
             txUpdate();
+            await rateControl.applyRateControl(startTime, txNum, results);
         }
     }
 
@@ -263,10 +263,9 @@ async function runDuration(msg, cb, context) {
     let rateControl = new RateControl(msg.rateControl, blockchain);
     rateControl.init(msg);
     const duration = msg.txDuration; // duration in seconds
-    const tps = rateControl.controller.options.tps;
-    log('duration is %d, tps is %d', duration, tps / msg.totalClients);
-    forceUpdateTxNum = forceUpdateTxNum < tps ? forceUpdateTxNum : tps;
-    msg.args.txNum = duration * (tps / msg.totalClients);
+    const tps = rateControl.controller.options.tps / msg.totalClients;
+    log('duration is %d, tps is %d', duration, tps);
+    msg.args.txNum = duration * tps;
     msg.args.clientIndex = msg.clientIdx;
 
     await cb.init(blockchain, context, msg.args);
@@ -287,11 +286,13 @@ async function runDuration(msg, cb, context) {
             }
             return Promise.resolve();
         }));
-        await rateControl.applyRateControl(startTime, txNum, results);
-        // force update
-        if (txNum % forceUpdateTxNum === 0) {
-            log('force update, txNum is', txNum);
+        // applyRateControl per seconds
+        if (txNum > tps * (Date.now() - startTime) / 1000) {
+            log('wait net req end, txNum is %d, req Num is %d', txNum, promises.length);
+            await Promise.all(promises);
+            promises = [];
             txUpdate();
+            await rateControl.applyRateControl(startTime, txNum, results);
         }
     }
 

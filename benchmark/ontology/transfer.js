@@ -30,21 +30,12 @@ module.exports.init = async function (blockchain, context, args) {
     log('args client index is', args.clientIndex);
     if (sendTx) {
         const read = readline.createInterface({
-            input: fs.createReadStream('./transfer.txt')
+            input: fs.createReadStream('./transfer' + args.clientIndex + '.txt')
         });
-        let i = 0;
-        let startIndex = txNum * args.clientIndex + 1;
-        let endIndex = txNum * (args.clientIndex + 1);
         read.on('line', (line) => {
-            i += 1;
-            if (i >= startIndex && i <= endIndex) {
-                let lineContent = line.split(',');
-                if (typeof lineContent === 'undefined' || lineContent.length < 2) {
-                    log('tx is ', line);
-                }
-                txHash.push(lineContent[0]);
-                txData.push(lineContent[1]);
-            }
+            let lineContent = line.split(',');
+            txHash.push(lineContent[0]);
+            txData.push(lineContent[1]);
         });
         while (txData.length < txNum) {
             await Util.sleep(1000).then(() => {

@@ -231,7 +231,7 @@ async function runFixedNumber(msg, cb, context) {
         await rateControl.applyRateControl(startTime, txNum, results);
         // force update
         if (txNum % forceUpdateTxNum === 0) {
-            log('force update');
+            log('force update, txNum is', txNum);
             txUpdate();
         }
     }
@@ -290,7 +290,7 @@ async function runDuration(msg, cb, context) {
         await rateControl.applyRateControl(startTime, txNum, results);
         // force update
         if (txNum % forceUpdateTxNum === 0) {
-            log('force update');
+            log('force update, txNum is', txNum);
             txUpdate();
         }
     }

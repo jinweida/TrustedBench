@@ -167,6 +167,8 @@ async function runFixedNumber(msg, cb, context) {
     }
 
     await Promise.all(promises);
+    // wait all tx processed
+    log('all tx has been sended, remain notSureTxStatus length is ', notSureTxStatus.size);
     while (emptyBlockNum < 2 && notSureTxStatus.size > 0) {
         await Util.sleep(1000).then(() => {
         });
@@ -227,7 +229,7 @@ async function runDuration(msg, cb, context) {
 
     await Promise.all(promises);
     // wait all tx processed
-    log('all tx has been sended, remain notSureTxStatus length is ', notSureTxStatus.length);
+    log('all tx has been sended, remain notSureTxStatus length is ', notSureTxStatus.size);
     while (emptyBlockNum < 2 && notSureTxStatus.size > 0) {
         await Util.sleep(1000).then(() => {
         });

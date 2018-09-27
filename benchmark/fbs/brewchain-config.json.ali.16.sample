@@ -1,0 +1,161 @@
+{
+  "blockchain": {
+    "type": "brewchain",
+    "config": "benchmark/fbs/brewchain.json"
+  },
+  "command" : {
+    "start": "ls -l",
+    "end" : "ls -l"
+  },
+  "test": {
+    "name": "fbs",
+    "description" : "This is an example benchmark for caliper, to test the backend DLT's performance with simple account opening & querying transactions",
+    "clients": {
+      "type": "local",
+      "number": 3
+    },
+    "rounds": [{
+        "label" : "500",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.5" },
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "501",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.2" },
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "502",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.6" },
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "503",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.249"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "504",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.247"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "505",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.246"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "506",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.250"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "507",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.252"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "508",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.251"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "509",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.244"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "510",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.243"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "511",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.245"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "512",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.1"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "513",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.3"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "514",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.4"},
+        "callback" : "benchmark/fbs/trans.js"
+      },{
+        "label" : "515",
+        "txDuration" : [120],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 2000}}
+        ],
+        "arguments": { "hostip":"192.168.0.248"},
+        "callback" : "benchmark/fbs/trans.js"
+      }]
+  },
+  "monitor": {
+   "type": ["docker", "process"],
+    "docker":{
+      "name": ["all"]
+    },
+    "process": [
+      {
+        "command" : "node",
+        "arguments" : "local-client.js",
+        "multiOutput" : "avg"
+      }
+    ],
+    "interval": 1
+  }
+}

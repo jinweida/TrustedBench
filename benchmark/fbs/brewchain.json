@@ -1,0 +1,10 @@
+{
+  "brewchain": {
+  },
+  "info" : {
+    "Version": "1.0.5",
+    "Size": "4 Peers",
+    "Orderer": "Solo",
+    "Distribution": "Single Host"
+  }
+}

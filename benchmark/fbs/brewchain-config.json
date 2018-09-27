@@ -1,0 +1,41 @@
+{
+  "blockchain": {
+    "type": "brewchain",
+    "config": "benchmark/fbs/brewchain.json"
+  },
+  "command" : {
+    "start": "echo `date`",
+    "end" : "echo `date`"
+  },
+  "test": {
+    "name": "fbs",
+    "description" : "This is an example benchmark for caliper, to test the backend DLT's performance with simple account opening & querying transactions",
+    "clients": {
+      "type": "local",
+      "number": 1
+    },
+    "rounds": [{
+        "label" : "SLB",
+        "txDuration" : [3600],
+        "rateControl" : [
+          {"type": "fixed-rate", "opts": {"tps" : 100}}
+        ],
+        "arguments": { "hostip":"192.168.0.233" },
+        "callback" : "benchmark/fbs/trans.js"
+      }]
+  },
+  "monitor": {
+   "type": [ "process"],
+    "docker":{
+      "name": ["all"]
+    },
+    "process": [
+      {
+        "command" : "node",
+        "arguments" : "local-client.js",
+        "multiOutput" : "avg"
+      }
+    ],
+    "interval": 1
+  }
+}
